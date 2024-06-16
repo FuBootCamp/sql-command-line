@@ -1,4 +1,4 @@
-const { inquirerMenu, inquirerDepartment, inquirerRole } = require('./modules/inquirer');
+const { inquirerMenu, inquirerDepartment, inquirerRole, inquirerEmployee } = require('./modules/inquirer');
 const { viewRows, addRow } = require('./modules/pg');
 
 
@@ -13,7 +13,7 @@ const main = async() => {
           switch (selectedOption) {
             case 'View all departments':
                   var thisQuery = `SELECT department.name from department`
-                  queryResult = await viewRows(thisQuery);
+                  var queryResult = await viewRows(thisQuery);
                   console.table(queryResult);
                   break;
             case 'View all roles':
@@ -21,27 +21,27 @@ const main = async() => {
                                    FROM role
                                    JOIN department on role.department_id = department.id`
                   // console.log('Get all rows of roles');
-                  queryResult = await viewRows(thisQuery);
+                  var queryResult = await viewRows(thisQuery);
                   console.table(queryResult);
                   break;
             case 'View all employees':
-                  var thisQuery = `SELECT employee.first_name, employee.last_name, role.title
-                                   FROM employee
-                                   JOIN role on employee.role_id = role.id`
+                  var thisQuery = `SELECT employee.first_name, employee.last_name, role.title, role.salary
+                                   FROM employee, role, department
+                                   WHERE employee.role_id = role.id AND employee`
                   // console.log('Get all rows of roles');
-                  queryResult = await viewRows(thisQuery);
+                  var queryResult = await viewRows(thisQuery);
                   console.table(queryResult);
                   break;
-            case 'Add a new department':
+            case 'Add a department':
                   var newDepartmentName = await inquirerDepartment();
                   var thisQuery = `INSERT INTO department (name)
                                    VALUES ('${newDepartmentName.departmentName}')`;
-                  queryResult = await addRow(thisQuery);
+                  var queryResult = await addRow(thisQuery);
                   console.log(`Department added: ${newDepartmentName.departmentName}`);
                   break;
-            case 'Add a new role':
-                  var thisQuery = `SELECT id, name from department`
-                  queryResult = await viewRows(thisQuery);
+            case 'Add a role':
+                  var thisQuery = `SELECT id, name FROM department`
+                  var queryResult = await viewRows(thisQuery);
                   var newRoleTitle = await inquirerRole(queryResult);
                   var thisQuery = `INSERT INTO role (title, salary, department_id)
                                    VALUES ('${newRoleTitle.roleTitleName}',
@@ -50,7 +50,28 @@ const main = async() => {
                   console.log(thisQuery);
                   queryResult = await addRow(thisQuery);
                   console.log(`Role added: ${newRoleTitle.roleTitleName}`);
-                  break;       
+                  break;
+            case 'Add an employee':
+                  var thisQuery = `SELECT id, title FROM role`
+                  var queryResultRol = await viewRows(thisQuery);
+                  var thisQuery = `SELECT id, first_name, last_name FROM employee`
+                  var queryResultEmp = await viewRows(thisQuery);
+                  var newEmployee = await inquirerEmployee(queryResultRol,queryResultEmp);
+                  var thisQuery = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                                   VALUES ('${newEmployee.employeesFirstName}',
+                                           '${newEmployee.employeesLastName}',
+                                           '${newEmployee.listRoles}',
+                                           '${newEmployee.listManagers}')`;
+                  // console.log(thisQuery);
+                  if (newEmployee.listManagers === 0) {
+                        var thisQuery = `INSERT INTO employee (first_name, last_name, role_id)
+                                         VALUES ('${newEmployee.employeesFirstName}',
+                                                 '${newEmployee.employeesLastName}',
+                                                 '${newEmployee.listRoles}')`;
+                  }
+                  queryResult = await addRow(thisQuery);
+                  console.log(`Employee added: ${newEmployee.employeesFirstName} ${newEmployee.employeesLastName} `);
+                  break;             
             default:
           }
       } while (selectedOption !== 'Exit');

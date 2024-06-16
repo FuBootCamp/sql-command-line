@@ -11,9 +11,12 @@ const inquirerMenu = async() => {
             choices: ['View all departments', 
                       'View all roles',
                       'View all employees',
-                      'Add a new department',
-                      'Add a new role',
+                      'Add a department',
+                      'Add a role',
+                      'Add an employee',
+                      'Update an employee role',
                       'Exit'],
+            loop: false,
             }
           ]);
     return selectedOption.listOption;
@@ -31,25 +34,6 @@ const inquirerDepartment = async() => {
 
     return newDepartmentname;
 };
-
-// const askRole = [
-//     {
-//         name:    "roleTitleName",
-//         message: "What is the title of the new role?",
-//         type:    "input",           
-//     },
-//     {
-//         name:    "roleSalary",
-//         message: "What is the salary of the role?",
-//         type:    "input",           
-//     },
-//     {
-//         name:    "listDepartments",
-//         message: "In Which department? ",
-//         type:    "list",       
-//         choices:  listofoptions,
-//     }
-// ];
 
 const inquirerRole = async(listofdepartments) => {
     const newRoleTitle = await inquirer.prompt(
@@ -80,4 +64,51 @@ const inquirerRole = async(listofdepartments) => {
     return newRoleTitle;
 };
 
-module.exports ={inquirerMenu,inquirerDepartment, inquirerRole};
+const inquirerEmployee = async(listofRoles, listofManagers) => {
+  let nullRow = {
+    "id" : 0,
+    "first_name" : "Null",
+    "last_name" : ""
+    }
+  listofManagers.unshift(nullRow);
+  console.log(listofManagers);
+  const newRoleTitle = await inquirer.prompt(
+      [
+          {
+            name:    "employeesFirstName",
+            message: "What is the employee's first name?",
+            type:    "input",           
+          },
+          {
+            name:    "employeesLastName",
+            message: "What is the employee's last name?",
+            type:    "input",           
+          },
+          {
+            name:    "listRoles",
+            message: "What is the employee's role? ",
+            type:    "list",       
+            choices:  listofRoles.map((listValues) => { 
+                      return {
+                          name:  listValues.title,
+                          value: listValues.id,
+                             };
+                      }),
+          },
+          {
+            name:    "listManagers",
+            message: "Who is the employee's manager? ",
+            type:    "list",       
+            choices:  listofManagers.map((listValues) => { 
+                      return {
+                          name:  `${listValues.first_name} ${listValues.last_name}`,
+                          value: listValues.id,
+                             };
+                      }),
+            loop:     false, 
+          }
+      ]);
+
+  return newRoleTitle;
+};
+module.exports ={inquirerMenu,inquirerDepartment, inquirerRole, inquirerEmployee};
