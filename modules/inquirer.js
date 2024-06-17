@@ -71,7 +71,7 @@ const inquirerEmployee = async(listofRoles, listofManagers) => {
     "last_name" : ""
     }
   listofManagers.unshift(nullRow);
-  console.log(listofManagers);
+  // console.log(listofManagers);
   const newRoleTitle = await inquirer.prompt(
       [
           {
@@ -111,4 +111,38 @@ const inquirerEmployee = async(listofRoles, listofManagers) => {
 
   return newRoleTitle;
 };
-module.exports ={inquirerMenu,inquirerDepartment, inquirerRole, inquirerEmployee};
+
+
+const inquirerUpdateRoleEmp = async(listofEmployees, listofRoles) => {
+
+  // console.log(listofManagers);
+  const updateRole = await inquirer.prompt(
+      [
+        {
+          name:    "listEmployees",
+          message: "Which employee's role do you want to update? ",
+          type:    "list",       
+          choices:  listofEmployees.map((listValues) => { 
+                    return {
+                        name:  `${listValues.first_name} ${listValues.last_name}`,
+                        value: listValues.id,
+                           };
+                    }),
+          },
+          {
+            name:    "listRoles",
+            message: "Which role do you want to assign the selected employee? ",
+            type:    "list",       
+            choices:  listofRoles.map((listValues) => { 
+                      return {
+                          name:  listValues.title,
+                          value: listValues.id,
+                             };
+                      }),
+          }
+      ]);
+
+  return updateRole;
+};
+
+module.exports ={inquirerMenu,inquirerDepartment, inquirerRole, inquirerEmployee, inquirerUpdateRoleEmp};

@@ -1,4 +1,4 @@
-const { inquirerMenu, inquirerDepartment, inquirerRole, inquirerEmployee } = require('./modules/inquirer');
+const { inquirerMenu, inquirerDepartment, inquirerRole, inquirerEmployee, inquirerUpdateRoleEmp } = require('./modules/inquirer');
 const { viewRows, addRow } = require('./modules/pg');
 
 
@@ -71,15 +71,29 @@ const main = async() => {
                   if (newEmployee.listManagers === 0) {
                         var thisQuery = `INSERT INTO employee (first_name, last_name, role_id)
                                          VALUES ('${newEmployee.employeesFirstName}',
-                                                 '${newEmployee.employeesLastName}',
-                                                 '${newEmployee.listRoles}')`;
-                  }
+                                         '${newEmployee.employeesLastName}',
+                                         '${newEmployee.listRoles}')`;
+                        }
                   queryResult = await addRow(thisQuery);
                   console.log(`Employee added: ${newEmployee.employeesFirstName} ${newEmployee.employeesLastName} `);
                   break;             
+            case 'Update an employee role':
+                  var thisQuery = `SELECT id, first_name, last_name FROM employee`
+                  var queryResultEmployees = await viewRows(thisQuery);
+                  var thisQuery = `SELECT id, title FROM role`
+                  var queryResultRoles = await viewRows(thisQuery);
+                  var updateEmployee = await inquirerUpdateRoleEmp(queryResultEmployees,queryResultRoles);
+                  var thisQuery = `UPDATE employee
+                                   SET role_id = ${updateEmployee.listRoles}
+                                   WHERE id =  ${updateEmployee.listEmployees}`
+                  // console.log(thisQuery);
+                  queryResult = await addRow(thisQuery);
+                  console.log(`Role of the employee  updated: ${updateEmployee.employeesFirstName} ${updateEmployee.employeesLastName} `);
+                  break;           
             default:
           }
       } while (selectedOption !== 'Exit');
 };
 
 main();
+
