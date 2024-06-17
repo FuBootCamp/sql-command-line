@@ -12,12 +12,12 @@ const main = async() => {
 
           switch (selectedOption) {
             case 'View all departments':
-                  var thisQuery = `SELECT department.name from department`
+                  var thisQuery = `SELECT id as id_, name as department from department`
                   var queryResult = await viewRows(thisQuery);
                   console.table(queryResult);
                   break;
             case 'View all roles':
-                  var thisQuery = `SELECT role.title, role.salary, department.name
+                  var thisQuery = `SELECT role.id as id_, role.title, role.salary, department.name as department
                                    FROM role
                                    JOIN department on role.department_id = department.id`
                   // console.log('Get all rows of roles');
@@ -25,9 +25,14 @@ const main = async() => {
                   console.table(queryResult);
                   break;
             case 'View all employees':
-                  var thisQuery = `SELECT employee.first_name, employee.last_name, role.title, role.salary
-                                   FROM employee, role, department
-                                   WHERE employee.role_id = role.id AND employee`
+                  var thisQuery = `SELECT e.id as id_, e.first_name, e.last_name, role.title, department.name as department, role.salary, m.first_name || ' ' || m.last_name as manager
+                                   FROM employee e, employee m, role, department
+                                   WHERE e.manager_id is not null and e.manager_id = m.id and department.id = role.department_id and role.id = e.role_id
+                                   UNION
+                                   SELECT e.id as ids, e.first_name, e.last_name, role.title, department.name as department, role.salary, null  as manager
+                                   FROM employee e, role, department
+                                   WHERE e.manager_id is null and department.id = role.department_id and role.id = e.role_id
+                                   ORDER BY id_;`
                   // console.log('Get all rows of roles');
                   var queryResult = await viewRows(thisQuery);
                   console.table(queryResult);
@@ -47,7 +52,7 @@ const main = async() => {
                                    VALUES ('${newRoleTitle.roleTitleName}',
                                            '${newRoleTitle.roleSalary}',
                                            '${newRoleTitle.listDepartments}')`;
-                  console.log(thisQuery);
+                  // console.log(thisQuery);
                   queryResult = await addRow(thisQuery);
                   console.log(`Role added: ${newRoleTitle.roleTitleName}`);
                   break;
